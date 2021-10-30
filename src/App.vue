@@ -1,26 +1,78 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+    <div class="row">
+      <h1> Crypto monedas</h1>
+      <input type="text"
+        class="form-control bg-dark text-light rounded-0 border-0 my-4"
+        placeholder="search"
+        @keyup="searchCoin()"
+        v-model="textSearch"
+      >
+      <table class="table table-dark">
+        <thead>
+          <tr>
+            <th v-for="titulo in titulos" :key="titulo">
+              {{ titulo }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(coin, index) in filtrado" :key="coin.id">
+            <td class="text-muted">{{ index + 1 }}</td>
+            <td>
+              <img :src="coin.image" style="width: 2rem" class="me-2" />
+              <span>{{ coin.name }}</span>
+              <span class="ms-2 text-uppercase text-muted">{{
+                coin.symbol
+              }}</span>
+            </td>
+            <td>$ {{ coin.current_price }}</td>
+            <td
+              :class="[
+                coin.price_change_percentage_24h > 0
+                  ? 'text-success'
+                  : 'text-danger',
+              ]"
+            >
+              {{ coin.price_change_percentage_24h }} %
+            </td>
+            <td>${{ coin.total_volume.toLocaleString() }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  data() {
+    return {
+      coins: [],
+      filtrado: [],
+      titulos: ["#", "Coin", "Precio", "precio chang", "Volumen"],
+      textSearch: "",
+    };
+  },
+  async mounted() {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=clp&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+    );
+    const data = await res.json();
+    console.log(data);
+    this.coins = data;
+    this.filtrado = data;
+  },
+  methods:{
+    searchCoin(){
+      this.filtrado = this.coins.filter((coin) =>
+       coin.name.toLowerCase().includes(this.textSearch.toLowerCase()) ||
+       coin.symbol.toLowerCase().includes(this.textSearch.toLowerCase())) 
+    }
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
